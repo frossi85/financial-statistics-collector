@@ -32,7 +32,7 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "2.2.6" % "test")
 
 import Keys._
-javaOptions in Test += "-Dconfig.file=test/scala/com.example/resources/application.conf"
+javaOptions in Test += "-Dconfig.file=test/resources/application.conf"
 
 
 
