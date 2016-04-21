@@ -18,13 +18,8 @@ class SimpleKafkaConsumerTest extends FunSpec with Matchers{
 
   describe("The SimpleKafka Api") {
     it("Should receive data using the consumer") {
-      val server = new KafkaTestServer
-      server.cleanPreviousData(groupId)
-      server.createTopic(topic)
-
-
       // setup producer
-      val properties = TestUtils.getProducerConfig("localhost:" + server.port)
+      val properties = TestUtils.getProducerConfig("localhost:" + KafkaHelpers.kafkaSocket().port)
       val producerConfig = new ProducerConfig(properties)
       val producer = new Producer[Nothing, Array[Byte]](producerConfig)
 
@@ -37,8 +32,8 @@ class SimpleKafkaConsumerTest extends FunSpec with Matchers{
       producer.close()
 
       // create consumer
-      val consumer = new SimpleKafkaConsumer("localhost", server.port, groupId, topic, server.zkConnect)
-      val iterator = consumer.read[MessageData](groupId)
+      val consumer = new SimpleKafkaConsumer(KafkaHelpers.kafkaSocket(), KafkaHelpers.zookeeperSocket(), groupId, topic)
+      val iterator = consumer.read[MessageData]()
 
 
       if(!iterator.isEmpty) {
@@ -49,9 +44,6 @@ class SimpleKafkaConsumerTest extends FunSpec with Matchers{
       } else {
         fail()
       }
-
-      // cleanup
-      server.shutdown()
     }
   }
 }

@@ -2,8 +2,6 @@ package com.example
 
 import java.nio.charset.StandardCharsets
 import java.util.Properties
-import com.example.KafkaHelpers.Socket
-import com.typesafe.config.ConfigFactory
 import kafka.consumer.ConsumerConfig
 import org.json4s.{DefaultFormats, jackson}
 import scala.collection.immutable.HashMap
@@ -31,13 +29,12 @@ class SimpleKafkaConsumer(kafkaSocket: Socket, zooKeeperSocket: Socket, groupId:
 
   private val consumer = kafka.consumer.Consumer.create(new ConsumerConfig(configuration))
 
-  def read[T <: AnyRef](groupId: String)(implicit m: Manifest[T]): Iterable[T] = {
+  def read[T <: AnyRef]()(implicit m: Manifest[T]): Iterable[T] = {
     implicit val serialization = jackson.Serialization
     implicit val formats = DefaultFormats
 
     val topicCountMap = HashMap(topic -> 1)
     val consumerMap = consumer.createMessageStreams(topicCountMap)
-
     val stream = consumerMap.get(topic).get(0)
     val iterator = stream.iterator()
 
@@ -49,19 +46,5 @@ class SimpleKafkaConsumer(kafkaSocket: Socket, zooKeeperSocket: Socket, groupId:
   }
 }
 
-
-object KafkaHelpers {
-  case class Socket(host: String, port: Int) {
-    override def toString() = s"$host:$port"
-  }
-
-  val config = ConfigFactory.load()
-
-  def kafkaSocket() :Socket = Socket(config.getString("kafka.host"), config.getInt("kafka.port"))
-  def zookeeperSocket(): Socket = Socket(config.getString("zookeeper.host"), config.getInt("zookeeper.port"))
-
-  def topic(): String = config.getString("kafka.topic")
-  def groupId(): String = config.getString("kafka.groupId")
-}
 
 
